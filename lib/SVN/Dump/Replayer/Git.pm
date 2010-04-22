@@ -280,7 +280,10 @@ sub on_directory_deletion {
 	$self->set_branch($revision, $change->entity());
 
 	my $rm_path = $change->rel_path();
-	confess "can't remove nonexistent directory $rm_path" unless -e $rm_path;
+
+	unless (-e $rm_path) {
+		cluck "can't remove nonexistent directory $rm_path";
+	}
 
 	$self->git_env_setup($revision);
 
@@ -366,7 +369,10 @@ sub on_file_deletion {
 	$self->set_branch($revision, $change->entity());
 
 	my $rm_path = $change->rel_path();
-	confess "can't remove nonexistent file $rm_path" unless -e $rm_path;
+
+	unless (-e $rm_path) {
+		cluck "can't remove nonexistent file $rm_path";
+	}
 
 	$self->git_env_setup($revision);
 
@@ -764,7 +770,9 @@ sub set_branch {
 sub do_directory_copy {
 	my ($self, $change, $revision, $branch_rel_path) = @_;
 
-	confess "cp to $branch_rel_path failed: path exists" if -e $branch_rel_path;
+	if (-e $branch_rel_path) {
+		cluck "cp to $branch_rel_path failed: path exists";
+	}
 
 	my ($copy_depot_descriptor, $copy_depot_path) = $self->get_copy_depot_info(
 		$change
@@ -790,7 +798,9 @@ sub do_file_copy {
 
 	my $branch_rel_path = $change->rel_path();
 
-	confess "cp to $branch_rel_path failed: path exists" if -e $branch_rel_path;
+	if (-e $branch_rel_path) {
+		cluck "cp to $branch_rel_path failed: path exists";
+	}
 
 	my ($copy_depot_descriptor, $copy_depot_path) = $self->get_copy_depot_info(
 		$change

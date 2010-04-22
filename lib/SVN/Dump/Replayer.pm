@@ -8,7 +8,7 @@ extends qw(SVN::Dump::Walker);
 use File::Copy;
 use File::Path;
 use Cwd;
-use Carp qw(confess);
+use Carp qw(confess cluck);
 use Digest::MD5 qw(md5_hex);
 
 use SVN::Dump::Arborist;
@@ -234,14 +234,14 @@ sub do_sans_die {
 sub do_mkdir {
 	my ($self, $directory) = @_;
 	$self->log("RUN) mkdir $directory");
-	mkdir $directory or confess "mkdir $directory failed: $!";
+	mkdir $directory or cluck "mkdir $directory failed: $!";
 	return;
 }
 
 sub do_rmdir {
 	my ($self, $directory) = @_;
 	$self->log("RUN) rmtree $directory");
-	rmtree $directory or confess "rmtree $directory failed: $!";
+	rmtree $directory or cluck "rmtree $directory failed: $!";
 	return;
 }
 
