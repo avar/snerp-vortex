@@ -201,23 +201,23 @@ sub calculate_depot_info {
 sub do_or_die {
   my $self = shift;
 	$self->log("RUN) @_");
-  system @_ and confess "system(@_) = ", ($? >> 8);
+  system @_ and cluck "system(@_) = ", ($? >> 8);
   return;
 }
 
 sub pipe_into_or_die {
 	my ($self, $data, $cmd) = @_;
 	$self->log("PIN) $cmd");
-	open my $fh, "|-", $cmd or confess $!;
-	print $fh $data or confess $!;
-	close $fh or confess $!;
+	open my $fh, "|-", $cmd or cluck $!;
+	print $fh $data or cluck $!;
+	close $fh or cluck $!;
 	return;
 }
 
 sub pipe_out_of_or_die {
 	my ($self, $cmd) = @_;
 	$self->log("POU) $cmd");
-	open my $fh, "-|", $cmd or confess $!;
+	open my $fh, "-|", $cmd or cluck $!;
 	local $/;
 	my $data = <$fh>;
 	close $fh or confiess $!;
@@ -250,7 +250,7 @@ sub push_dir {
 
   push @{$self->directory_stack()}, cwd();
 	$self->log("pushdir $new_dir");
-  chdir($new_dir) or confess "chdir $new_dir failed: $!";
+  chdir($new_dir) or cluck "chdir $new_dir failed: $!";
 
   return;
 }
@@ -259,14 +259,14 @@ sub pop_dir {
   my $self = shift;
   my $old_dir = pop @{$self->directory_stack()};
 	$self->log("popdir $old_dir");
-  chdir($old_dir) or confess "popdir failed: $!";
+  chdir($old_dir) or cluck "popdir failed: $!";
   return;
 }
 
 sub copy_file_or_die {
 	my ($self, $src, $dst) = @_;
 	$self->log("copy $src $dst");
-	copy($src, $dst) or confess "cp $src $dst failed: $!";
+	copy($src, $dst) or cluck "cp $src $dst failed: $!";
 }
 
 sub log {
@@ -278,15 +278,15 @@ sub log {
 sub rewrite_file {
 	my ($self, $change, $full_path) = @_;
 
-	confess "edit $full_path failed: file doesn't exist" unless -e $full_path;
-	confess "edit $full_path failed: path is not a file" unless -f $full_path;
+	cluck "edit $full_path failed: file doesn't exist" unless -e $full_path;
+	cluck "edit $full_path failed: path is not a file" unless -f $full_path;
 
-  # File may not actually be changing.  The subversion change may only
-  # be to properties, which we don't care about here.  Only bother
+    # File may not actually be changing.  The subversion change may only
+    # be to properties, which we don't care about here.  Only bother
 	# checking if the file sizes are equal; saves a lot of I/O that way.
 
 	if ((-s $full_path) == do { use bytes; length($change->content()) }) {
-    open my $fh, "<", $full_path or confess $!;
+    open my $fh, "<", $full_path or cluck $!;
     local $/;
     my $current_text = <$fh>;
     if ($current_text eq $change->content()) {
@@ -304,7 +304,7 @@ sub rewrite_file {
 sub write_new_file {
 	my ($self, $change, $full_path) = @_;
 
-	confess "create $full_path failed: file already exists" if -e $full_path;
+	cluck "create $full_path failed: file already exists" if -e $full_path;
 
 	$self->log("creating file $full_path");
 
@@ -313,28 +313,28 @@ sub write_new_file {
 
 sub write_change_data {
 	my ($self, $change, $full_path) = @_;
-	open my $fh, ">", $full_path or confess "create $full_path failed: $!";
-	print $fh $change->content() or confess $!;
-	close $fh or confess $!;
+	open my $fh, ">", $full_path or cluck "create $full_path failed: $!";
+	print $fh $change->content() or cluck $!;
+	close $fh or cluck $!;
 }
 
 sub do_file_deletion {
 	my ($self, $full_path) = @_;
 
-	confess "delete $full_path failed: file doesn't exist" unless -e $full_path;
-	confess "delete $full_path failed: path not to a file" unless -f $full_path;
+	cluck "delete $full_path failed: file doesn't exist" unless -e $full_path;
+	cluck "delete $full_path failed: path not to a file" unless -f $full_path;
 
 	$self->log("RUN) rm $full_path");
 
-	unlink $full_path or confess "unlink $full_path failed: $!";
+	unlink $full_path or cluck "unlink $full_path failed: $!";
 }
 
 sub do_rmdir_safely {
 	my ($self, $full_path) = @_;
-	confess "rmtree $full_path failed: directory doesn't exist" unless (
+	cluck "rmtree $full_path failed: directory doesn't exist" unless (
 		-e $full_path
 	);
-	confess "rmtree $full_path failed: path not to a directory" unless (
+	cluck "rmtree $full_path failed: path not to a directory" unless (
 		-d $full_path
 	);
 	$self->do_rmdir($full_path);
@@ -346,7 +346,7 @@ sub do_rename {
 	my $full_src_path = $self->calculate_path($change->src_path());
 	my $full_dst_path = $self->calculate_path($change->path());
 
-	rename $full_src_path, $full_dst_path or confess(
+	rename $full_src_path, $full_dst_path or cluck(
 		"rename $full_src_path $full_dst_path failed: $!"
 	);
 }
@@ -359,7 +359,7 @@ sub decrement_copy_source {
 		$change->src_path,
 	);
 
-	confess "what's going on" unless defined $copy_source;
+	cluck "what's going on" unless defined $copy_source;
 
 	$self->do_file_deletion($copy_depot_path) unless (
 		$copy_source->delete_ref($revision->id(), $change->path())

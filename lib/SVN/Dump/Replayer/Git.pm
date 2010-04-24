@@ -166,7 +166,7 @@ after on_walk_begin => sub {
 		# Initialize it.  Probably can use Moose to tell us it's been set.
 		$self->authors({});
 
-		open my $fh, "<", $self->authors_file() or confess $!;
+		open my $fh, "<", $self->authors_file() or cluck $!;
 		while (<$fh>) {
 			my ($nick, $name, $email) = (/^\s*([^=]*?)\s*=\s*([^<]*?)\s*<(\S+?)>/);
 
@@ -447,7 +447,7 @@ sub on_file_rename {
 	$self->push_dir($self->replay_base());
 	$self->set_branch($revision, $change->entity());
 
-	confess "target of file rename (", $change->rel_path(), ") exists" if (
+	cluck "target of file rename (", $change->rel_path(), ") exists" if (
 		-e $change->rel_path()
 	);
 
@@ -457,7 +457,7 @@ sub on_file_rename {
 		"git", "mv", $change->src_rel_path(), $change->rel_path()
 	) or rename(
 		$change->rel_src_path(), $change->rel_path()
-	) or confess(
+	) or cluck(
 		"file rename from ", $change->rel_src_path(),
 		" to ", $change->rel_path(),
 		"failed: $!"
@@ -473,7 +473,7 @@ sub on_rename {
 	$self->push_dir($self->replay_base());
 	$self->set_branch($revision, $change->entity());
 
-	confess "target of rename (", $change->rel_path(), ") already exists" if (
+	cluck "target of rename (", $change->rel_path(), ") already exists" if (
 		-e $change->rel_path()
 	);
 
@@ -483,7 +483,7 @@ sub on_rename {
 		"git", "mv", $change->src_rel_path(), $change->rel_path()
 	) or rename(
 		$change->src_rel_path(), $change->rel_path()
-	) or confess(
+	) or cluck(
 		"rename from ", $change->src_rel_path(),
 		" to ", $change->rel_path(),
 		"failed: $!"
@@ -499,7 +499,7 @@ sub on_directory_rename {
 	$self->push_dir($self->replay_base());
 	$self->set_branch($revision, $change->entity());
 
-	confess "target of dir rename (", $change->rel_path(), ") already exists" if (
+	cluck "target of dir rename (", $change->rel_path(), ") already exists" if (
 		-e $change->rel_path()
 	);
 
@@ -507,7 +507,7 @@ sub on_directory_rename {
 		"git", "mv", $change->src_rel_path(), $change->rel_path()
 	) or rename(
 		$change->src_rel_path(), $change->rel_path()
-	) or confess(
+	) or cluck(
 		"directory rename from ", $change->src_rel_path(),
 		" to ", $change->rel_path(),
 		"failed: $!"
@@ -627,9 +627,9 @@ sub git_commit {
 	my $message = $revision->message();
 	$message = "(no message)" unless defined $message and length $message;
 
-	open my $tmp, ">", $git_commit_message_file or confess $!;
-	print $tmp $message or confess $!;
-	close $tmp or confess $!;
+	open my $tmp, ">", $git_commit_message_file or cluck $!;
+	print $tmp $message or cluck $!;
+	close $tmp or cluck $!;
 
 	$self->git_env_setup($revision);
 
@@ -725,14 +725,14 @@ sub ensure_parent_dir_exists {
 	return unless length $path and $path ne "/";
 	return if -e $path;
 	$self->log("mkpath $path");
-	mkpath($path) or confess "mkpath failed: $!";
+	mkpath($path) or cluck "mkpath failed: $!";
 }
 
 # Assumes that the cwd is already the replay repository.
 sub set_branch {
 	my ($self, $revision, $analysis) = @_;
 
-	confess "set_branch() called without an entity" unless (
+	cluck "set_branch() called without an entity" unless (
 		$analysis->is_entity()
 	);
 
@@ -754,7 +754,7 @@ sub set_branch {
 		$self->current_rw(0);
 	}
 	else {
-		confess "set_branch() inappropriately called for a $type $name";
+		cluck "set_branch() inappropriately called for a $type $name";
 	}
 
 	$self->do_sans_die("git", "checkout", "-q", $name);
@@ -782,7 +782,7 @@ sub do_directory_copy {
 	$copy_depot_path .= ".tar.gz";
 
 	unless (-e $copy_depot_path) {
-		confess "cp src $copy_depot_path ($copy_depot_descriptor) doesn't exist";
+		cluck "cp src $copy_depot_path ($copy_depot_descriptor) doesn't exist";
 	}
 
 	$self->do_mkdir($branch_rel_path);
@@ -807,7 +807,7 @@ sub do_file_copy {
 	);
 
 	unless (-e $copy_depot_path) {
-		confess "cp src $copy_depot_path ($copy_depot_descriptor) doesn't exist";
+		cluck "cp src $copy_depot_path ($copy_depot_descriptor) doesn't exist";
 	}
 
 	# Weirdly, the copy source may not be authoritative.
